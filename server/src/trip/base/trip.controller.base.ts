@@ -48,11 +48,34 @@ export class TripControllerBase {
   })
   async create(@common.Body() data: TripCreateInput): Promise<Trip> {
     return await this.service.create({
-      data: data,
+      data: {
+        ...data,
+
+        listing: {
+          connect: data.listing,
+        },
+
+        user: {
+          connect: data.user,
+        },
+      },
       select: {
         createdAt: true,
         id: true,
+
+        listing: {
+          select: {
+            id: true,
+          },
+        },
+
         updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
   }
@@ -76,7 +99,20 @@ export class TripControllerBase {
       select: {
         createdAt: true,
         id: true,
+
+        listing: {
+          select: {
+            id: true,
+          },
+        },
+
         updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
   }
@@ -101,7 +137,20 @@ export class TripControllerBase {
       select: {
         createdAt: true,
         id: true,
+
+        listing: {
+          select: {
+            id: true,
+          },
+        },
+
         updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     if (result === null) {
@@ -131,11 +180,34 @@ export class TripControllerBase {
     try {
       return await this.service.update({
         where: params,
-        data: data,
+        data: {
+          ...data,
+
+          listing: {
+            connect: data.listing,
+          },
+
+          user: {
+            connect: data.user,
+          },
+        },
         select: {
           createdAt: true,
           id: true,
+
+          listing: {
+            select: {
+              id: true,
+            },
+          },
+
           updatedAt: true,
+
+          user: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
     } catch (error) {
@@ -168,7 +240,20 @@ export class TripControllerBase {
         select: {
           createdAt: true,
           id: true,
+
+          listing: {
+            select: {
+              id: true,
+            },
+          },
+
           updatedAt: true,
+
+          user: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
     } catch (error) {

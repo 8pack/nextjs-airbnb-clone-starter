@@ -13,7 +13,17 @@ export const ListingList = (props: ListProps): React.ReactElement => {
     >
       <Datagrid rowClick="show">
         <DateField source="createdAt" label="Created At" />
+        <TextField label="description " source="description" />
         <TextField label="ID" source="id" />
+        <TextField label="listingCreatedBy " source="listingCreatedBy" />
+        <TextField label="locationData" source="locationData" />
+        <TextField label="locationType" source="locationType" />
+        <TextField label="mapData" source="mapData" />
+        <TextField label="photos" source="photos" />
+        <TextField label="placeSpace" source="placeSpace" />
+        <TextField label="placeType" source="placeType" />
+        <TextField label="price" source="price" />
+        <TextField label="Title" source="title" />
         <DateField source="updatedAt" label="Updated At" />
       </Datagrid>
     </List>

@@ -18,11 +18,16 @@ import * as gqlACGuard from "../../auth/gqlAC.guard";
 import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
 import * as common from "@nestjs/common";
 import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { CreateTripArgs } from "./CreateTripArgs";
+import { UpdateTripArgs } from "./UpdateTripArgs";
 import { DeleteTripArgs } from "./DeleteTripArgs";
 import { TripCountArgs } from "./TripCountArgs";
 import { TripFindManyArgs } from "./TripFindManyArgs";
 import { TripFindUniqueArgs } from "./TripFindUniqueArgs";
 import { Trip } from "./Trip";
+import { Listing } from "../../listing/base/Listing";
+import { User } from "../../user/base/User";
 import { TripService } from "../trip.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Trip)
@@ -73,6 +78,63 @@ export class TripResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
+  @graphql.Mutation(() => Trip)
+  @nestAccessControl.UseRoles({
+    resource: "Trip",
+    action: "create",
+    possession: "any",
+  })
+  async createTrip(@graphql.Args() args: CreateTripArgs): Promise<Trip> {
+    return await this.service.create({
+      ...args,
+      data: {
+        ...args.data,
+
+        listing: {
+          connect: args.data.listing,
+        },
+
+        user: {
+          connect: args.data.user,
+        },
+      },
+    });
+  }
+
+  @common.UseInterceptors(AclValidateRequestInterceptor)
+  @graphql.Mutation(() => Trip)
+  @nestAccessControl.UseRoles({
+    resource: "Trip",
+    action: "update",
+    possession: "any",
+  })
+  async updateTrip(@graphql.Args() args: UpdateTripArgs): Promise<Trip | null> {
+    try {
+      return await this.service.update({
+        ...args,
+        data: {
+          ...args.data,
+
+          listing: {
+            connect: args.data.listing,
+          },
+
+          user: {
+            connect: args.data.user,
+          },
+        },
+      });
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        throw new apollo.ApolloError(
+          `No resource was found for ${JSON.stringify(args.where)}`
+        );
+      }
+      throw error;
+    }
+  }
+
   @graphql.Mutation(() => Trip)
   @nestAccessControl.UseRoles({
     resource: "Trip",
@@ -90,5 +152,45 @@ export class TripResolverBase {
       }
       throw error;
     }
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => Listing, {
+    nullable: true,
+    name: "listing",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Listing",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldListing(
+    @graphql.Parent() parent: Trip
+  ): Promise<Listing | null> {
+    const result = await this.service.getListing(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => User, {
+    nullable: true,
+    name: "user",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "read",
+    possession: "any",
+  })
+  async resolveFieldUser(@graphql.Parent() parent: Trip): Promise<User | null> {
+    const result = await this.service.getUser(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 }
